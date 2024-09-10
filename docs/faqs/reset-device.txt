@@ -1,0 +1,3 @@
+Question: How do I reset my blackberry?
+Answer: To reset your device, press and hold the power button for 10 seconds until the device restarts.
+

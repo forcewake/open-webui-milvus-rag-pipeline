@@ -1,0 +1,8 @@
+Title: blackberry 910 Not Resetting Properly
+Content:
+If your blackberry 910 doesn't reset after holding the power button for 10 seconds, follow these steps:
+1. Ensure that the blackberry 910 has enough battery power. Plug it into a power source if necessary.
+2. Hold the power button and volume down button simultaneously for 15 seconds.
+3. If the blackberry 910 still doesn’t reset, perform a factory reset by going to 'Settings' > 'System' > 'Factory Reset'.
+4. If the issue persists, contact customer support for further assistance.
+
