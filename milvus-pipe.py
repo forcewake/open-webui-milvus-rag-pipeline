@@ -1,17 +1,41 @@
+"""
+title: milvus rag pipeline
+author: forcewake
+date: 2024-05-30
+version: 1.0
+license: MIT
+description: A pipeline for retrieving relevant information from a knowledge base using thepymilvus.
+requirements: pymilvus, requests, sentence-transformers>=2.2.0
+"""
+
 from typing import List, Union, Generator, Iterator
 from pymilvus import connections, Collection
 from sentence_transformers import SentenceTransformer
 import requests
 
 class Pipeline:
+    class Valves(BaseModel):
+        MILVUS_HOST: str
+        MILVUS_PORT: str
+        MILVUS_COLLECTIONS: List[str]
+        OLLAMA_URL: str
+        OLLAMA_NAME_MODEL: str 
+
     def __init__(self):
         self.name = "Milvus Pipeline"
-        self.milvus_host = 'host.docker.internal'
-        self.milvus_port = '19530'
-        self.ollama_url = "http://host.docker.internal:11434/api/generate"
-        self.model_name = "llama3"
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
-        self.collections = ["faqs", "wikidocs"]  # Add your second collection name here
+
+        # Initialize
+        self.valves = self.Valves(
+            **{
+                "pipelines": ["*"],                                                           # Connect to all pipelines
+                "MILVUS_HOST": os.getenv("MILVUS_HOST", "host.docker.internal"),                          
+                "MILVUS_PORT": os.getenv("MILVUS_PORT", 19530),                                  
+                "MILVUS_COLLECTIONS": os.getenv("MILVUS_COLLECTIONS", ["docs"]),                                
+                "OLLAMA_URL": os.getenv("OLLAMA_URL", "http://host.docker.internal:11434/api/generate"), # Make sure to update with the URL of your Ollama host, such as http://localhost:11434 or remote server address
+                "OLLAMA_NAME_MODEL": os.getenv("OLLAMA_NAME_MODEL", "llama3.1:latest")        # Model to use for text-to-SQL generation      
+            }
+        )
 
     async def on_startup(self):
         print(f"on_startup:{__name__}")
@@ -22,7 +46,7 @@ class Pipeline:
         pass
 
     def connect_to_milvus(self):
-        connections.connect(host=self.milvus_host, port=self.milvus_port)
+        connections.connect(host=self.valves.MILVUS_HOST, port=self.valves.MILVUS_PORT)
         print("Connected to Milvus")
 
     def retrieve_from_milvus(self, collection_name, query, top_k=3):
@@ -51,11 +75,11 @@ class Pipeline:
 
     def query_ollama(self, prompt, context):
         data = {
-            "model": self.model_name,
+            "model": self.valves.OLLAMA_NAME_MODEL,
             "prompt": f"Context: {context}\n\nQuestion: {prompt}\n\nAnswer:",
             "stream": False
         }
-        response = requests.post(self.ollama_url, json=data)
+        response = requests.post(self.valves.OLLAMA_URL, json=data)
         if response.status_code == 200:
             return response.json()['response']
         else:
@@ -73,7 +97,7 @@ class Pipeline:
 
         # Retrieve relevant documents from both Milvus collections
         all_retrieved_docs = []
-        for collection_name in self.collections:
+        for collection_name in self.valves.MILVUS_COLLECTIONS:
             retrieved_docs = self.retrieve_from_milvus(collection_name=collection_name, query=user_message)
             all_retrieved_docs.extend(retrieved_docs)
 
