@@ -12,8 +12,12 @@ from typing import List, Union, Generator, Iterator
 from pymilvus import connections, Collection
 from sentence_transformers import SentenceTransformer
 import requests
+import os
+
+from pydantic import BaseModel
 
 class Pipeline:
+
     class Valves(BaseModel):
         MILVUS_HOST: str
         MILVUS_PORT: str
