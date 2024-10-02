@@ -21,7 +21,7 @@ class Pipeline:
     class Valves(BaseModel):
         MILVUS_HOST: str
         MILVUS_PORT: int
-        MILVUS_COLLECTIONS: List[str]
+        MILVUS_COLLECTION: str
         OLLAMA_URL: str
         OLLAMA_NAME_MODEL: str 
 
@@ -35,7 +35,7 @@ class Pipeline:
                 "pipelines": ["*"],                                                           # Connect to all pipelines
                 "MILVUS_HOST": os.getenv("MILVUS_HOST", "host.docker.internal"),                          
                 "MILVUS_PORT": os.getenv("MILVUS_PORT", 19530),                                  
-                "MILVUS_COLLECTIONS": os.getenv("MILVUS_COLLECTIONS", ["docs"]),                                
+                "MILVUS_COLLECTION": os.getenv("MILVUS_COLLECTION", "docs"),                                
                 "OLLAMA_URL": os.getenv("OLLAMA_URL", "http://host.docker.internal:11434/api/generate"), # Make sure to update with the URL of your Ollama host, such as http://localhost:11434 or remote server address
                 "OLLAMA_NAME_MODEL": os.getenv("OLLAMA_NAME_MODEL", "llama3.1:latest")        # Model to use for text-to-SQL generation      
             }
@@ -101,7 +101,7 @@ class Pipeline:
 
         # Retrieve relevant documents from both Milvus collections
         all_retrieved_docs = []
-        for collection_name in self.valves.MILVUS_COLLECTIONS:
+        for collection_name in [self.valves.MILVUS_COLLECTION]:
             retrieved_docs = self.retrieve_from_milvus(collection_name=collection_name, query=user_message)
             all_retrieved_docs.extend(retrieved_docs)
 
