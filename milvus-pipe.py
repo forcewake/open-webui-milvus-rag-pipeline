@@ -109,9 +109,21 @@ class Pipeline:
 
         url = f"{self.valves.AZURE_OPENAI_ENDPOINT}/openai/deployments/{self.valves.AZURE_OPENAI_DEPLOYMENT_NAME}/chat/completions?api-version={self.valves.AZURE_OPENAI_API_VERSION}"
 
-        data = {
-            "prompt": f"Context: {context}\n\nQuestion: {prompt}\n\nAnswer:",
-            "stream": False
+        # Payload for the request
+        payload = {
+            "messages": [
+                {
+                "role": "system",
+                "content": [
+                    {
+                    "type": "text",
+                    "text":  f"Context: {context}\n\nQuestion: {prompt}\n\nAnswer:",
+                    }
+                ]
+                }
+            ],
+            "temperature": 0.7,
+            "top_p": 0.95
         }
 
         # Initialize the response variable to None.
@@ -119,7 +131,7 @@ class Pipeline:
         try:
             r = requests.post(
                 url=url,
-                json=data,
+                json=payload,
                 headers=headers,
                 stream=True,
             )
