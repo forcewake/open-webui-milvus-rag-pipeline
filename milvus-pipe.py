@@ -18,10 +18,9 @@ from pydantic import BaseModel
 
 
 class Pipeline:
-
     class Valves(BaseModel):
         MILVUS_HOST: str
-        MILVUS_PORT: str
+        MILVUS_PORT: int
         MILVUS_COLLECTIONS: List[str]
         OLLAMA_URL: str
         OLLAMA_NAME_MODEL: str 
